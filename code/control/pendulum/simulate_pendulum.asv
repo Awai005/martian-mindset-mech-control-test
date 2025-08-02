@@ -1,0 +1,32 @@
+% simulate_pendulum.m
+% Main entry point for pendulum simulation (free fall or swing-up)
+
+clear; clc;
+
+% Parameters
+params.g = 9.81;    % gravity (m/s^2)
+params.l = 0.5;     % length (m)
+params.m = 0.5;     % mass (kg)
+params.b = 0.1;     % damping coefficient (Nms/rad)
+params.dt = 0.0;   % time step (s)
+
+% Mode selection: 'free_fall' or 'swing_up'
+params.mode = 'swing_up'; % Change to 'free_fall' for free-fall simulation
+
+% Integrator selection: 'euler' or 'rk4'
+integrator = 'euler'; % Change to 'euler' for Euler integration
+
+% Controller selection for swing-up: 'pd' or 'lqr'
+params.controller = 'pd'; % Change to 'pd' for PD controller
+
+% Initial state
+if strcmp(params.mode, 'free_fall')
+    initial_state = [pi/2; 0]; % 90 deg, no velocity
+    sim_time = 10;
+else % swing_up
+    initial_state = [0; 0]; % Downward position, no velocity
+    sim_time = 10;
+end
+
+% Run simulation
+[t, theta_hist, theta_dot_hist, tau_hist] = run_pendulum_simulation(params, integrator, initial_state, sim_time);

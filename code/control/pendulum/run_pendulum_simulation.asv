@@ -1,0 +1,37 @@
+function [t, theta_hist, theta_dot_hist, tau_hist] = run_pendulum_simulation(params, integrator, initial_state, sim_time)
+% Runs pendulum simulation with specified mode, integrator, and initial state
+params.T = sim_time;
+if strcmp(params.mode, 'free_fall')
+    %params.T = 120; % Shorter time for free fall
+else % swing_up
+    %params.T = 120; 
+    % Controller parameters
+    params.k_e = 2.0;   % Energy controller gain
+    params.E_switch = 0.9; % Switch to stabilization when E > 0.9 * E_d
+    if strcmp(params.controller, 'pd')
+        params.k_p = 2.5; % PD proportional gain
+        params.k_d = 0.; % PD derivative gain
+    else % lqr
+        % LQR controller
+        A = [0, 1; 19.62, -0.8];
+        B = [0; 8];
+        Q = eye(2); % Penalize theta - pi and theta_dot
+        R = 1; % Penalize control effort
+        params.K_lqr = lqr(A, B, Q, R); % Compute LQR gain
+    end
+end
+
+% Run simulation with selected integrator
+if strcmp(integrator, 'euler')
+    [t, theta_hist, theta_dot_hist, tau_hist] = euler_integrator(@pendulum_dynamics, initial_state, params);
+else % rk4
+    [t, theta_hist, theta_dot_hist, tau_hist] = rk4_integrator(@pendulum_dynamics, initial_state, params);
+end
+
+% Plot angle and torque vs time
+plot_theta_vs_time(t, theta_hist, tau_hist, params);
+
+% Animate
+%render_pendulum(t, theta_hist, theta_dot_hist, params, tau_hist);
+
+end
